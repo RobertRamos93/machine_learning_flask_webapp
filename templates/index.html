@@ -9,13 +9,16 @@
             event.preventDefault();  // Evitar el envío normal del formulario
             
             const formData = new FormData(event.target);
-            fetch('/predict', {
+            fetch('https://machinelearningflaskwebapp-production.up.railway.app/predict', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)  // `data` debe contener las características que estás enviando para la predicción
             })
             .then(response => response.json())
-            .then(data => {
-                document.getElementById('result').innerText = data.result;  // Mostrar el resultado
+            .then(result => console.log(result))
+            .catch(error => console.error('Error:', error));  // Mostrar el resultado
             })
             .catch(error => {
                 console.error('Error:', error);
