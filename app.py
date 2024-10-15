@@ -2,6 +2,7 @@
 from flask import Flask, request, render_template
 import joblib
 import pandas as pd
+import os
 
 # Crear instancia de Flask
 app = Flask(__name__)
