@@ -1,59 +1,62 @@
-from flask import Flask, request, jsonify
-from flask_restful import Api, Resource
+# Dependencias
+from flask import Flask, request, render_template
 import joblib
 import pandas as pd
+import os
 
+# Crear instancia de Flask
 app = Flask(__name__)
-api = Api(app)
 
 # Carga del modelo
 model = joblib.load('heart_disease_model.pkl')
 
-class Predict(Resource):
-    def post(self):
-        # Captura de los datos
-        data = request.get_json()
-        
-        age = int(data['age'])
-        sex = data['sex']
-        cp = data['cp']
-        trestbps = int(data['trestbps'])
-        chol = int(data['chol'])
-        fbs = int(data['fbs'])
-        restecg = int(data['restecg'])
-        thalach = int(data['thalach'])
-        exang = int(data['exang'])
-        oldpeak = float(data['oldpeak'])
-        slope = int(data['slope'])
-        ca = int(data['ca'])
-        thal = int(data['thal'])
+@app.route('/')
+def home():
+    return render_template('index.html')
 
-        # DataFrame con las características
-        df = pd.DataFrame({
-            'age': [age],
-            'trestbps': [trestbps],
-            'chol': [chol],
-            'fbs': [fbs],
-            'restecg': [restecg],
-            'thalach': [thalach],
-            'exang': [exang],
-            'oldpeak': [oldpeak],
-            'slope': [slope],
-            'ca': [ca],
-            'thal': [thal],
-            'sex_male': [1 if sex == 'male' else 0],
-            'cp_atypical angina': [1 if cp == 'atypical angina' else 0],
-            'cp_non-anginal pain': [1 if cp == 'non-anginal pain' else 0],
-            'cp_typical angina': [1 if cp == 'typical angina' else 0]
-        })
+@app.route('/predict', methods=['POST'])
+def predict():
+    # Captura de los datos
+    age = int(request.form['age'])
+    sex = request.form['sex']
+    cp = request.form['cp']
+    trestbps = int(request.form['trestbps'])
+    chol = int(request.form['chol'])
+    fbs = int(request.form['fbs'])
+    restecg = int(request.form['restecg'])
+    thalach = int(request.form['thalach'])
+    exang = int(request.form['exang'])
+    oldpeak = float(request.form['oldpeak'])
+    slope = int(request.form['slope'])
+    ca = int(request.form['ca'])
+    thal = int(request.form['thal'])
 
-        # Predicción
-        prediction = model.predict(df)
-        result = "No Heart disease" if prediction[0] == 1 else "Heart disease"
-        return jsonify({'result': result})
+    # DataFrame con las características (el orden importa, revisar el archivo csv después del entrenamiento)
+    data = pd.DataFrame({
+        'age': [age],
+        'trestbps': [trestbps],
+        'chol': [chol],
+        'fbs': [fbs],
+        'restecg': [restecg],
+        'thalach': [thalach],
+        'exang': [exang],
+        'oldpeak': [oldpeak],
+        'slope': [slope],
+        'ca': [ca],
+        'thal': [thal],
+        'sex_male': [1 if sex == 'male' else 0],
+        'cp_atypical angina': [1 if cp == 'atypical angina' else 0],
+        'cp_non-anginal pain': [1 if cp == 'non-anginal pain' else 0],
+        'cp_typical angina': [1 if cp == 'typical angina' else 0]
+    })
 
-# Configuración de las rutas
-api.add_resource(Predict, '/predict')
+    # Predicción
+    prediction = model.predict(data)
+    result = "No Heart disease" if prediction[0] == 1 else "Heart disease"
+    return {'result': result}  
+
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
